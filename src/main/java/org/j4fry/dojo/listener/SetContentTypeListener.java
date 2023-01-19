@@ -23,8 +23,8 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.PhaseEvent;
 import jakarta.faces.event.PhaseId;
 import jakarta.faces.event.PhaseListener;
-import javax.portlet.RenderResponse;
-import javax.servlet.ServletResponse;
+// import javax.portlet.RenderResponse;
+import jakarta.servlet.ServletResponse;
 
 /**
  * Mojarra 2.0 sets content-type application/xhtml+xml which breaks Safari
@@ -48,9 +48,11 @@ public class SetContentTypeListener implements PhaseListener {
 			String contentType = "text/html; charset=UTF-8";
 			if (response instanceof ServletResponse) {
 				((ServletResponse) response).setContentType(contentType);
-			} else if (response instanceof RenderResponse) {
-				((RenderResponse) response).setContentType(contentType);
-			}
+			} 
+			//  Jan 19, 2023 - No Jakarta Version of Porltet Yet
+			// else if (response instanceof RenderResponse) {
+			// 	((RenderResponse) response).setContentType(contentType);
+			// }
 		}
 	}
 
