@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- Author Alexander Bell -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+
+    <ui:composition>
+    	<h:panelGroup id="#{id}" rendered="#{rendered == null ? 'true' : rendered}" binding="#{dojoHelper.binding[id]}">
+		    <h:commandButton action="#{dojoHelper.exec[action == null ? 'dojoFacesNullAction' : action].trigger}"
+		    	id="#{id}_action" binding="#{dojoHelper.binding[dojoHelper.concat[id]['_action']]}"
+		    	style="display:none;">
+		      	<ui:insert />
+		    </h:commandButton>
+		    <h:inputHidden id="#{id}_hidden" value="#{dojoHelper.gridEvent[key][value][for]}" 
+		    	binding="#{dojoHelper.binding[dojoHelper.concat[id]['_hidden']]}" />
+		    <script type="text/javascript">
+		      // <![CDATA[
+		      dojo.addOnLoad(function() {
+		        var grid = dijit.byId("#{dojoHelper.clientId[for]}");
+		        if (grid) {
+		        	dojo.connect(grid, "#{event == null ? 'onCellClick' : event}", function(event) {
+		            if (event.cell.field == "#{field}") {
+		        		var item = grid.getItem(event.rowIndex);
+		        		if (item) {
+			            	dojo.byId("#{dojoHelper.clientId[dojoHelper.concat[id]['_hidden']]}").value 
+			            		= #{dojoHelper.jsId[dojoHelper.concat[for]['_store']]}.getIdentity(item);
+		                	dojo.byId("#{dojoHelper.clientId[dojoHelper.concat[id]['_action']]}").click();
+		              }
+		            }
+		          });
+		        }
+		      });
+		      // ]]>
+		    </script>
+	    </h:panelGroup>
+    </ui:composition>
+</html>

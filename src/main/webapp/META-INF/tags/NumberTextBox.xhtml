@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2009 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.12 $ $Date: 2010/04/02 14:58:27 $
+ *
+ -->
+    <ui:composition>
+	 	<h:panelGroup id="#{id}" rendered="#{rendered == null ? 'true' : rendered}">
+	    	<h:inputText id="#{id}_num" value="#{value}" 
+	    		onchange="#{onchange}" onclick="#{onclick}" onkeyup="#{onkeyup}"
+	    		binding="#{dojoHelper.binding[id]}" converter="org.j4fry.dojo.Number">
+	    		<ui:insert />
+	    	</h:inputText>
+		    <script type="text/javascript">
+				//<![CDATA[
+				dojo.require("dijit.form.NumberTextBox");
+				dojo.require("dojo.number");
+				dojo.addOnLoad(function() {
+		    		var dijitWidget = dijit.byId("#{dojoHelper.clientId[id]}");
+		    		if (dijitWidget != null) {
+			    		dijitWidget.destroy();
+		    		}
+		    		var jsfElement = dojo.byId("#{dojoHelper.clientId[id]}");
+		    		var onchange = dojo.attr(jsfElement, "onchange");
+		    		var onclick = dojo.attr(jsfElement, "onclick");
+		    		var onkeyup = dojo.attr(jsfElement, "onkeyup");
+		    		try {
+						var dojoElement = new dijit.form.NumberTextBox({
+							#{attr == null || attr=="" ? "" : attr}#{attr == null || attr=="" ? "" : ","}
+	                        name: dojo.attr(jsfElement, "name"),
+	                        value: dojo.number.parse(jsfElement.value, {locale: 'en-us'}),
+	                        disabled: #{disabled == null ? 'false' : disabled}
+	                    }, jsfElement);
+		                dojoElement.startup();
+	                    if(typeof onchange == 'function') 
+		                    dojo.connect(dojoElement, "onChange", 
+				                    function() { 
+			                    		setTimeout(dojo.hitch(dijit.byId("#{dojoHelper.clientId[id]}"), onchange), 0); 
+			                    	}
+	                    	);
+	                    if(typeof onclick == 'function') 
+	                        dojo.connect(dojoElement, "onClick", dojo.hitch(dojo.byId("#{dojoHelper.clientId[id]}"), onclick));                    
+	                    if(typeof onkeyup == 'function') 
+	                        dojo.connect(dojoElement, "onKeyUp", dojo.hitch(dojo.byId("#{dojoHelper.clientId[id]}"), onkeyup));                    
+		    		} catch(err) {
+			    		  console.log(err);
+		    		}
+		    	});
+				//]]>
+			</script>
+		</h:panelGroup>
+    </ui:composition>
+</html>
+
+
+
+
+
+
+
+
+
+

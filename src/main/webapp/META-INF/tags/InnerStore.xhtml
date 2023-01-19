@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2010 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.2 $ $Date: 2010/04/06 07:22:34 $
+ *
+ -->
+	<ui:composition>	
+	    <h:inputHidden value="#{dojoHelper.storeUpdate[items == null ? '' : items][var][key][onInsert != null ? onInsert : ''][modelClass != null ? modelClass : ''][onUpdate != null ? onUpdate : ''][autoUpdate != null ? autoUpdate : ''][onDelete != null ? onDelete : ''][autoDelete != null ? autoDelete : ''][structure == null ? defaultStructure : structure]}" 
+	    	id="#{id}_update" 
+	   		binding="#{dojoHelper.binding[updateBinding]}"
+	   		converter="org.j4fry.dojo.StoreUpdateConverter"
+	   		validator="org.j4fry.dojo.StoreUpdateValidator">
+	   		<f:attribute name="modelClass" value="#{modelClass}" />
+	   		<f:attribute name="structure" value="#{structure == null ? defaultStructure : structure}" />
+	   		<f:attribute name="var" value="#{var}" />
+	   		<f:attribute name="items" value="#{items}" />
+	   		<ui:insert />
+	   	</h:inputHidden>
+	    <h:inputHidden value="#{dojoHelper.store[items == null ? 'empty' : items]}" 
+	    	id="#{id}_store" 
+	   		binding="#{dojoHelper.binding[id]}"
+	   		converter="org.j4fry.dojo.StoreConverter">
+	   		<f:attribute name="structure" value="#{structure == null ? defaultStructure : structure}" />
+	   		<f:attribute name="var" value="#{var}" />
+	   		<f:attribute name="items" value="#{items}" />
+	   		<f:attribute name="key" value="#{key}" />
+	   	</h:inputHidden>
+	    <script type="text/javascript">
+		    //<![CDATA[
+			dojo.require("dojo.data.ItemFileWriteStore");
+			var #{dojoHelper.jsId[id]}_update = [];
+			var #{dojoHelper.jsId[id]};
+	
+			Date.prototype.json = function(){ return "__DojoFaces__Date(" + this.getTime() + ")__"};
+			
+			function #{dojoHelper.jsId[id]}_flushUpdates() {
+		        #{dojoHelper.jsId[id]}_update = [];
+		        dojo.byId('#{dojoHelper.clientId[updateBinding]}').value = '';
+	        }
+	        
+	        function #{dojoHelper.jsId[id]}_createStore() {
+				#{dojoHelper.jsId[id]} = new dojo.data.ItemFileWriteStore({data: {identifier: "#{key}", 
+					idAttribute: "#{key}", label: "#{label == null ? key : label}", 
+					items:	dojo.fromJson(dojo.byId('#{dojoHelper.clientId[id]}').value) }});
+				if (dojo.byId('#{dojoHelper.clientId[updateBinding]}').value != '') {
+					/* if there is a value in this field when rendering the page the changes
+					   haven't gone through due to a conversion or validation roundtrip
+					   thus all changes previously done to the store have to be replayed now */
+					#{dojoHelper.jsId[id]}_update = dojo.fromJson(dojo.byId('#{dojoHelper.clientId[updateBinding]}').value);
+					for (var i = 0; i < #{dojoHelper.jsId[id]}_update.length; i++) {
+						if (typeof #{dojoHelper.jsId[id]}_update[i]['insert'] != 'undefined') {
+							// replay an insert
+							var newItem = {};
+							for (var attribute in #{dojoHelper.jsId[id]}_update[i]['insert']) {
+								newItem[attribute] = #{dojoHelper.jsId[id]}_update[i]['insert'][attribute];
+							} 
+							#{dojoHelper.jsId[id]}.newItem(newItem);
+						} else if (typeof #{dojoHelper.jsId[id]}_update[i]['set'] != 'undefined') {
+							// replay a set
+							for (var changedKey in #{dojoHelper.jsId[id]}_update[i]['set']) {
+								#{dojoHelper.jsId[id]}.fetchItemByIdentity({identity: changedKey, onItem: function(storedItem) {
+									for (var attribute in #{dojoHelper.jsId[id]}_update[i]['set'][changedKey]) {
+										if (attribute != '#{key}') {
+											#{dojoHelper.jsId[id]}.setValue(storedItem, attribute, #{dojoHelper.jsId[id]}_update[i]['set'][changedKey][attribute]); 
+										}
+									}
+								}});
+							}
+						} else if (typeof #{dojoHelper.jsId[id]}_update[i]['delete'] != 'undefined') {
+							// replay a delete
+							#{dojoHelper.jsId[id]}.fetchItemByIdentity({identity: #{dojoHelper.jsId[id]}_update[i]['delete'], onItem: function(storedItem) {
+								#{dojoHelper.jsId[id]}.deleteItem(storedItem);
+							}});
+						}
+					}
+				}
+				#{dojoHelper.jsId[id]}.onNew = function(newItem, parentInfo) {
+					insert = {};
+					for(var attribute in newItem) {
+						if(attribute.substr(0,1) != "_") {
+							insert[attribute] = newItem[attribute][0];
+						}
+					}
+					/* add the insert object to a possible previous delete (of the same key)
+					   previous updates shouldn't exists - there was nothing to update */
+					#{dojoHelper.jsId[id]}_update.push({'insert':insert});
+					dojo.byId('#{dojoHelper.clientId[updateBinding]}').value = 
+						dojo.toJson(#{dojoHelper.jsId[id]}_update);
+				}
+				#{dojoHelper.jsId[id]}.onSet = function(item, attribute, oldValue, newValue) {
+					/* for nested stores (trees) newValue may contain nested objects
+					   create a copy here to avoid reflecting additional changes
+					   inside the update object */
+					if (newValue != null) if (typeof newValue == 'object') {
+						newValue = #{dojoHelper.jsId[id]}_deepCopy(newValue);
+					}
+					// check whether other operations have been done on this key
+					var wasSet = false;
+					for (var i = 0; i < #{dojoHelper.jsId[id]}_update.length; i++) {
+						if (typeof #{dojoHelper.jsId[id]}_update[i]['insert'] != 'undefined' 
+						&& #{dojoHelper.jsId[id]}_update[i]['insert'].#{key} == item.#{key}[0]) {
+							#{dojoHelper.jsId[id]}_update[i]['insert'][attribute] = newValue;
+							wasSet = true;
+							break;
+						}
+						if (typeof #{dojoHelper.jsId[id]}_update[i]['set'] != 'undefined' 
+						&& typeof #{dojoHelper.jsId[id]}_update[i]['set'][item.#{key}[0]] != 'undefined') {
+							#{dojoHelper.jsId[id]}_update[i]['set'][item.#{key}[0]][attribute] = newValue;
+							wasSet = true;
+							break;
+						}
+					}
+					if (!wasSet) {
+						/* add the new set element */
+						var change = {};
+						change[item.#{key}[0]] = {};
+						change[item.#{key}[0]][attribute] = newValue;
+						#{dojoHelper.jsId[id]}_update.push({'set':change});
+					}
+					dojo.byId('#{dojoHelper.clientId[updateBinding]}').value 
+						= dojo.toJson(#{dojoHelper.jsId[id]}_update).replace(/\"__DojoFaces__Date\((\d{13})\)__\"/g, "new Date($1)");
+				}
+				#{dojoHelper.jsId[id]}.onDelete = function(item) {
+					var wasSet = false;
+					for (var i = 0; i < #{dojoHelper.jsId[id]}_update.length; i++) {
+						if (typeof #{dojoHelper.jsId[id]}_update[i]['insert'] != 'undefined' 
+						&& #{dojoHelper.jsId[id]}_update[i]['insert'].#{key} == item.#{key}[0]) {
+							// was previously inserted - delete this!
+							var rest = #{dojoHelper.jsId[id]}_update.slice(i + 1);
+							#{dojoHelper.jsId[id]}_update.length = i;
+							#{dojoHelper.jsId[id]}_update.push.apply(#{dojoHelper.jsId[id]}_update, rest);							
+							wasSet = true;
+							break;
+						}
+						if (typeof #{dojoHelper.jsId[id]}_update[i]['set'] != 'undefined' 
+						&& typeof #{dojoHelper.jsId[id]}_update[i]['set'][item.#{key}[0]] != 'undefined') {
+							// was previously updated - delete this and also delete from model!
+							var rest = #{dojoHelper.jsId[id]}_update.slice(i + 1);
+							#{dojoHelper.jsId[id]}_update.length = i;
+							#{dojoHelper.jsId[id]}_update.push.apply(#{dojoHelper.jsId[id]}_update, rest);							
+							break;
+						}
+					}
+					if (!wasSet) {
+						#{dojoHelper.jsId[id]}_update.push({'delete':item.#{key}[0]});
+					}
+					dojo.byId('#{dojoHelper.clientId[updateBinding]}').value 
+						= dojo.toJson(#{dojoHelper.jsId[id]}_update).replace(/\"__DojoFaces__Date\((\d{13})\)__\"/g, "new Date($1)");
+				}
+	        }
+
+	        function #{dojoHelper.jsId[id]}_deepCopy(node) {
+		        if (node == null) return null;
+		        if (node instanceof Array) {
+			        var result = new Array();
+			        for (var index in node) {
+						result.push(#{dojoHelper.jsId[id]}_deepCopy(node[index]));
+			        }
+		        } else if (node instanceof Date) {
+			        return new Date(node.getTime());
+		        } else if (node instanceof Object) {
+			        var result = new Object();
+			        for (var attribute in node) {
+						if(attribute.substr(0,1) != "_") {
+							result[attribute] = #{dojoHelper.jsId[id]}_deepCopy(node[attribute]);
+						}
+			        }
+		        } else {
+			        return node;
+		        }
+		        return result; 
+	        }
+
+	        dojo.addOnLoad(function() {
+	        	#{dojoHelper.jsId[id]}_createStore();
+	        });
+	        //]]>
+	    </script>
+	</ui:composition>
+</html>

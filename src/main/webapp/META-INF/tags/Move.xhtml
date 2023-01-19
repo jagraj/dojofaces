@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2010 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.3 $ $Date: 2009/08/10 19:47:09 $
+ *
+ -->
+    <ui:composition>
+	 	<h:panelGroup id="#{id}" rendered="#{rendered == null ? 'true' : rendered}" 
+	 		style="position:absolute;top:#{top}px;left:#{left}px"
+	 		binding="#{dojoHelper.binding[id]}">
+	    	<h:inputHidden id="#{id}_left" value="#{left}" 
+	    		binding="#{dojoHelper.binding[dojoHelper.concat[id]['left']]}" />
+	    	<h:inputHidden id="#{id}_top" value="#{top}" 
+	    		binding="#{dojoHelper.binding[dojoHelper.concat[id]['top']]}" />
+    		<ui:insert />
+		    <script type="text/javascript">
+				//<![CDATA[
+				dojo.require("#{constraint eq 'box' ? 'dojo.dnd.move' : 
+					(constraint eq 'parent' ? 'dojo.dnd.move' :
+					(constraint eq 'timed' ? 'dojo.dnd.TimedMoveable' : 'dojo.dnd.Moveable'))}");
+				var #{dojoHelper.jsId[id]};
+				dojo.addOnLoad(function() {
+		    		try {
+		    			#{dojoHelper.jsId[id]} = new #{constraint eq 'box' ? 'dojo.dnd.move.boxConstrainedMoveable' : 
+							(constraint eq 'parent' ? 'dojo.dnd.move.parentConstrainedMoveable' :
+							(constraint eq 'timed' ? 'dojo.dnd.TimedMoveable' : 'dojo.dnd.Moveable'))}(dojo.byId("#{dojoHelper.clientId[id]}"), {
+							#{attr == null || attr=="" ? "" : attr}
+	                    });
+		    		} catch(err) {
+			    		  console.log(err);
+		    		}
+		    		dojo.connect(#{dojoHelper.jsId[id]}, 'onMoveStop', function(move) {
+			    		dojo.byId('#{dojoHelper.clientId[dojoHelper.concat[id]['left']]}').value = move.node.offsetLeft;
+			    		dojo.byId('#{dojoHelper.clientId[dojoHelper.concat[id]['top']]}').value = move.node.offsetTop;
+		    		});
+		    	});
+				//]]>
+			</script>
+		</h:panelGroup>
+    </ui:composition>
+</html>
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2009 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.2 $ $Date: 2009/12/07 08:37:12 $
+ *
+ -->
+    <ui:composition>
+	 	<h:panelGroup id="#{id}" rendered="#{rendered == null ? 'true' : rendered}">
+	    	<h:commandButton value="#{label}" disabled="#{disabled == null ? 'false' : disabled}"
+	    		action="#{dojoHelper.exec[action == null ? 'dojoFaceletsNullAction' : action].trigger}" 
+	    		binding="#{dojoHelper.binding[dojoHelper.concat[id]['_Button']]}" id="#{id}_button" onclick="#{onclick}"
+	    		style="display:none">
+	    		<ui:insert />
+	    	</h:commandButton>
+	    	<h:panelGroup id="#{id}_comboButton" binding="#{dojoHelper.binding[id]}">
+	    		<ui:insert name="menu"/>
+	    	</h:panelGroup>
+		    <script type="text/javascript">
+				//<![CDATA[
+				dojo.require("dijit.form.ComboButton");
+				dojo.addOnLoad(function() {
+		    		var dijitWidget = dijit.byId("#{dojoHelper.clientId[id]}");
+		    		if (dijitWidget != null) {
+			    		dijitWidget.destroy();
+		    		}
+		    		var jsfElement = dojo.byId("#{dojoHelper.clientId[dojoHelper.concat[id]['_Button']]}");
+		    		var myLabel = jsfElement.value;
+	                var onclick = dojo.attr(jsfElement, "onclick");
+		    		try {
+						var dojoElement = new dijit.form.ComboButton({
+								#{attr == null || attr=="" ? "" : attr}#{attr == null || attr=="" ? "" : ","}
+						        label: myLabel,
+		                        name: dojo.attr(jsfElement, "name"),
+		                        value: dojo.attr(jsfElement, "value"),
+		                        onClick: function() { jsfElement.click(); },
+		                        disabled: #{disabled == null ? 'false' : disabled}
+		                    }, dojo.byId("#{dojoHelper.clientId[id]}"));
+		                dojoElement.startup();	    	
+		    		} catch(err) {
+			    		  console.log(err);
+		    		}
+		    	});
+				//]]>
+			</script>
+		</h:panelGroup>
+    </ui:composition>
+</html>
+
+
+
+
+
+
+
+
+
+
+

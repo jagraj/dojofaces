@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt"
+      xmlns:dojo="http://j4fry.org/dojo">
+<!-- 
+ * Copyright 2009 Alexander Bell
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Alexander Bell (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.3 $ $Date: 2010/04/06 07:22:34 $
+ *
+ -->
+	<ui:composition>	
+		<h:panelGroup id="#{id}" rendered="#{rendered == null ? 'true' : rendered}">
+			<dojo:store id="#{id}_store" />
+			<h:panelGroup id="#{id}_div" styleClass="#{styleClass}" style="#{style}" 
+				binding="#{dojoHelper.binding[id]}"/>
+		    <script type="text/javascript">
+				//<![CDATA[
+				dojo.require("dojo.dnd.Container");
+				dojo.require("dojo.dnd.Manager");
+				dojo.require("dojo.dnd.Source");
+				
+				var #{dojoHelper.jsId[id]} = null; 
+				if (typeof #{dojoHelper.jsId[id]}_subscribeHandle == 'undefined') {
+					var #{dojoHelper.jsId[id]}_subscribeHandle = null;
+				}
+				
+				dojo.addOnLoad(function() {
+	        		var dijitWidget = dijit.byId("#{dojoHelper.clientId[id]}");
+	        		if (dijitWidget != null) {
+	    	    		dijitWidget.destroy();
+	        		}
+
+	        		if (#{dojoHelper.jsId[id]}_subscribeHandle != null) {
+		        		dojo.unsubscribe(#{dojoHelper.jsId[id]}_subscribeHandle);
+	        		} 
+
+	        		if("#{type != null and !(empty type) ? type : 'source'}" == "source") {
+	        			#{dojoHelper.jsId[id]} = new dojo.dnd.Source("#{dojoHelper.clientId[id]}", {#{attr == null || attr=="" ? "" : attr}});
+		            } else {
+		            	#{dojoHelper.jsId[id]} = new dojo.dnd.Target("#{dojoHelper.clientId[id]}", {#{attr == null || attr=="" ? "" : attr}});
+		            }
+
+	        		#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.fetch({onComplete:function(items) {
+						for (var i = 0; i < items.length; i++) {
+							try {
+								var node = dojo.doc.createElement("div");
+								for (var attribute in items[i]) {
+									// omit bedlump attributes
+									if (attribute.substring(0,1) != '_') {
+										node.setAttribute("dnddata_"+attribute, items[i][attribute]);
+									}
+								}
+								if ('#{nodeType}' != '') node.setAttribute("dndtype", '#{nodeType}');
+								node.innerHTML = #{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.getLabel(items[i]);										
+								#{dojoHelper.jsId[id]}.insertNodes(false, [node]);
+							} catch (e) {
+								console.error(e);
+							}
+						}
+			    	}});
+
+	        		#{dojoHelper.jsId[id]}_subscribeHandle = dojo.subscribe("/dnd/drop", function(dojo_dnd_source, dojo_dnd_nodes, dojo_dnd_copy, dojo_dnd_target){
+			        	if(dojo_dnd_target == #{dojoHelper.jsId[id]}){
+			        		#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.fetch({query: {#{key == null ? 'id' : key}:"*"}, onComplete: function(items) {
+				            	for (var i = 0; i < items.length; i++) {
+				            		#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.deleteItem(items[i]);
+				            	}
+			            	}});
+			        		#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.save();
+							dojo.query("*[class*=dojoDndItem]", dojo_dnd_target.node).forEach(
+								function(node, index, arr){
+									var item = {};
+									for (var ii = 0; ii < node.attributes.length; ii++) {
+										var attrib = node.attributes[ii];
+										if (attrib.nodeName.indexOf("dnddata_") == 0) {
+												item[attrib.nodeName.substring(8)] = attrib.value;
+										}
+									}
+									#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.newItem(item);
+								}
+							);
+						} else if(dojo_dnd_source == #{dojoHelper.jsId[id]} && !dojo_dnd_copy){
+				            for (var i = 0; i < dojo_dnd_nodes.length; i++) {
+				            	#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.fetchItemByIdentity({identity: dojo_dnd_nodes[i].getAttribute("dnddata_#{key == null || key == '' ? 'id' : key}"), onItem: function(storedItem) {
+				            		#{dojoHelper.jsId[dojoHelper.concat[id]['_store']]}.deleteItem(storedItem);
+						        }});
+				            }
+			            }
+		            });
+		    	});
+				//]]>
+			</script>
+		</h:panelGroup>
+	</ui:composition>
+</html>
+ 	  	 

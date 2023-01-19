@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2009 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.4 $ $Date: 2009/12/07 15:58:10 $
+ *
+ -->
+    <ui:composition>
+    	<h:commandButton value="#{label}" disabled="#{disabled == null ? 'false' : disabled}"
+    		action="#{dojoHelper.exec[action == null ? 'dojoFaceletsNullAction' : action].trigger}" 
+    		binding="#{dojoHelper.binding[dojoHelper.concat[id]['_CommandButton']]}" id="#{id}_button" 
+    		style="display:none" onclick="#{onclick}">
+    		<ui:insert />
+    	</h:commandButton>
+    	<h:panelGroup id="#{id}_item" binding="#{dojoHelper.binding[id]}"></h:panelGroup>
+	    <script type="text/javascript">
+			//<![CDATA[
+			dojo.require("dijit.MenuItem");
+    		dojo.addOnLoad(function() {
+           		var dojofaces_form = dojo.byId('#{dojoHelper.formId[id]}');
+        		if (typeof dojofaces_form != 'undefined') {
+            		var myButton = dojo.byId('#{dojoHelper.clientId[dojoHelper.concat[id]['_CommandButton']]}');
+            		if (typeof myButton != 'undefined') {
+    	        		myButton.parentNode.removeChild(myButton);
+    	    			dojofaces_form.appendChild(myButton);
+            		}
+        		}
+        		var dijitWidget = dijit.byId("#{dojoHelper.clientId[id]}");
+        		if (dijitWidget != null) {
+    	    		dijitWidget.destroy();
+        		}
+        		try {
+                    var dojoElement = new dijit.MenuItem({
+    					#{attr == null || attr=="" ? "" : attr}#{attr == null || attr=="" ? "" : ","}
+    					label: '#{label}',
+    					onClick: function() {dojo.byId('#{dojoHelper.clientId[dojoHelper.concat[id]['_CommandButton']]}').click()},
+                        disabled: #{disabled == null ? 'false' : disabled}
+                       }, dojo.byId("#{dojoHelper.clientId[id]}"));
+                    dojoElement.startup();	    	
+        		} catch(err) {
+    	    		  console.log(err);
+        		}
+    		});
+    		//]]>
+		</script>
+    </ui:composition>
+</html>
+
+
+
+
+
+
+
+
+
+
+

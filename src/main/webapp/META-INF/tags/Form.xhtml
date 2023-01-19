@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/fmt">
+<!-- 
+ * Copyright 2009 Ganesh Jung
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ 
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
+ * Version: $Revision: 1.6 $ $Date: 2009/10/30 09:53:01 $
+ *
+ -->
+    <ui:composition>
+		<h:panelGroup id="#{id}" rendered="#{rendered == null ? true : rendered}">
+			<script type="text/javascript">
+				// <![CDATA[
+			  	    if (typeof dojofaces_container_count == 'number')
+			  	    	dojofaces_container_count++;
+			  	    else
+			  	    	dojofaces_container_count = 1;
+				// ]]>
+			</script>
+	    	<h:form binding="#{dojoHelper.binding[id]}" id="#{id}_form" >
+	    		<ui:insert />
+	    	</h:form>
+		    <script type="text/javascript">
+				//<![CDATA[
+	    		dojo.require("dijit.form.Form");
+				dojo.addOnLoad(function() {
+		    		var dijitWidget = dijit.byId("#{dojoHelper.clientId[id]}");
+		    		if (dijitWidget != null) {
+			    		dijitWidget.destroy();
+		    		}
+		    		var jsfElement = dojo.byId("#{dojoHelper.clientId[id]}");
+		    		try {
+			            var dojoElement = new dijit.form.Form({
+							#{attr == null || attr=="" ? "" : attr}#{attr == null || attr=="" ? "" : ","}
+			                enctype: #{enctype == null || enctype =='' ? '' : '"'}#{enctype == null || enctype =='' ? 'dojo.attr(jsfElement, "enctype")' : enctype}#{enctype == null || enctype =='' ? '' : '"'},
+			                action: dojo.attr(jsfElement, "action"),
+		                    method: dojo.attr(jsfElement, "method")
+	                    }, jsfElement);
+		                dojoElement.startup();	    	
+		    		} catch(err) {
+			    		  console.log(err);
+		    		}
+			  	    if (typeof dojofaces_container_count == 'number'
+					  	&& --dojofaces_container_count == 0 
+					  	&& typeof dojofaces_onLoad == 'function')
+				  	    	dojofaces_onLoad();
+	    		});
+				//]]>
+			</script>
+		</h:panelGroup>
+    </ui:composition>
+</html>
