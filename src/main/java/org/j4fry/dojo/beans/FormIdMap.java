@@ -20,9 +20,9 @@ package org.j4fry.dojo.beans;
 
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIForm;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIForm;
+import jakarta.faces.context.FacesContext;
 
 /**
  * determines the id of the enclosing form of a JSF component

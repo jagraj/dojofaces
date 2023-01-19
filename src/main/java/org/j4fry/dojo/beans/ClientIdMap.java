@@ -20,8 +20,8 @@ package org.j4fry.dojo.beans;
 
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 
 /**
 * This Map is returned by {@link DojoHelper#getClientId()}

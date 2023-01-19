@@ -25,11 +25,11 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.ConverterException;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.ConverterException;
+import jakarta.faces.el.ValueBinding;
 
 import org.j4fry.json.JSFJSONObject;
 import org.j4fry.json.JSFJSONTokener;

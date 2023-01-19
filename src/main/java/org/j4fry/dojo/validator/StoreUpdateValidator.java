@@ -36,14 +36,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.ConverterException;
-import javax.faces.el.ValueBinding;
-import javax.faces.validator.Validator;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.FacesException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.ConverterException;
+import jakarta.faces.el.ValueBinding;
+import jakarta.faces.validator.Validator;
+import jakarta.faces.validator.ValidatorException;
 
 import org.j4fry.dojo.converter.StoreConverterBase;
 import org.j4fry.json.JSFJSONObject;

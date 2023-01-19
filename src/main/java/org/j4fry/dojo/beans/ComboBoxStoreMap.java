@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.el.ValueBinding;
 
 import org.j4fry.json.JSONObject;
 

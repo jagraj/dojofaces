@@ -27,9 +27,9 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Locale;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.ConverterException;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.ConverterException;
 
 /**
  * Special converter with fixed locale for tags with graphical representation
@@ -59,8 +59,8 @@ public class NumberConverter extends BaseConverter {
 	}
 	
 	/**
-	 * @see javax.faces.convert.Converter#getAsString(javax.faces.context.FacesContext,
-	 *      javax.faces.component.UIComponent, java.lang.Object)
+	 * @see jakarta.faces.convert.Converter#getAsString(jakarta.faces.context.FacesContext,
+	 *      jakarta.faces.component.UIComponent, java.lang.Object)
 	 */
 	public String getAsString(FacesContext context, UIComponent component,
 			Object valueObject) throws ConverterException {

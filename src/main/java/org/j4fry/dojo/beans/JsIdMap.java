@@ -2,8 +2,8 @@ package org.j4fry.dojo.beans;
 
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 
 public class JsIdMap extends MapAdapter {
 	private Map<String, UIComponent> bindings;

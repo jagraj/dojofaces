@@ -21,8 +21,8 @@ package org.j4fry.dojo.beans;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 
 /**
 * Central access point with helper methods for JSF templates.

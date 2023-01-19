@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.el.EvaluationException;
-import javax.faces.el.PropertyNotFoundException;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.el.EvaluationException;
+import jakarta.faces.el.PropertyNotFoundException;
+import jakarta.faces.el.ValueBinding;
 
 import org.j4fry.dojo.converter.StoreUpdateConverter;
 import org.j4fry.json.JSONArray;

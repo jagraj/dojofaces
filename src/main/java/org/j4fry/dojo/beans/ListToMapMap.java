@@ -22,8 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.el.ValueBinding;
 
 /**
  * transforms a list to a Map with params List list, String var, String key

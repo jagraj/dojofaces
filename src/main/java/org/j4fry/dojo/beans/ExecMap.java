@@ -18,8 +18,8 @@
  */
 package org.j4fry.dojo.beans;
 
-import javax.faces.context.FacesContext;
-import javax.faces.el.MethodBinding;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.el.MethodBinding;
 
 /**
  * execute a JSF method binding

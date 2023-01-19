@@ -22,10 +22,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.el.ValueBinding;
 
 
 /**

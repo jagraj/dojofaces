@@ -34,13 +34,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.ConverterException;
-import javax.faces.el.ValueBinding;
+import jakarta.faces.FacesException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.ConverterException;
+import jakarta.faces.el.ValueBinding;
 
 import org.j4fry.json.JSONArray;
 import org.j4fry.json.JSONException;
@@ -175,7 +175,7 @@ public abstract class StoreConverterBase implements Converter {
         		if (valueBindings.get(key) != null) {
 	        		Class clazz = valueBindings.get(key).getType(context);
 	        		if (clazz == java.lang.Number.class) {
-	        			converter = context.getApplication().createConverter("javax.faces.Number");
+	        			converter = context.getApplication().createConverter("jakarta.faces.Number");
 	        		} else {
 	        			converter = context.getApplication().createConverter(clazz);
 	        		}
