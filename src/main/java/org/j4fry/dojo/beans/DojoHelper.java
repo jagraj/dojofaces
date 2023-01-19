@@ -21,13 +21,17 @@ package org.j4fry.dojo.beans;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
 
 /**
 * Central access point with helper methods for JSF templates.
 * Accessible through EL expressions. 
 */
+@Named
+@RequestScoped
 public class DojoHelper {
 	/**
 	 * JSF component bindings set through EL

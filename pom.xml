@@ -32,7 +32,12 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>5.0.0</version>
-      </dependency>
+    </dependency>
+    <dependency>
+        <groupId>jakarta.enterprise</groupId>
+        <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        <version>3.0.1</version>
+    </dependency>
   </dependencies>
 
   <build>

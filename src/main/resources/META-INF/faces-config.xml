@@ -20,13 +20,6 @@
 <!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN" 
 "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
-	<managed-bean>
-		<managed-bean-name>dojoHelper</managed-bean-name>
-		<managed-bean-class>
-			org.j4fry.dojo.beans.DojoHelper
-		</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
 	<converter>
 		<converter-id>org.j4fry.dojo.Number</converter-id>
 		<converter-class>org.j4fry.dojo.converter.NumberConverter</converter-class>
