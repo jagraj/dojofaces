@@ -1,0 +1,8 @@
+/.settings/
+/target/
+.*.swp
+/.project
+/.classpath
+/.settings/
+.DS_Store
+/build/

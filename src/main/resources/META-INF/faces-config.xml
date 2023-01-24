@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
  Copyright 2009 Ganesh Jung
- 
- Licensed under the Apache License, Version 2.0 (the "License");
+ 2023 Jag Gangaraju & Volodymyr Siedlecki
+  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
  
@@ -17,9 +17,10 @@
  Author: Ganesh Jung (latest modification by $Author: ganeshpuri $)
  Version: $Revision: 1.12 $ $Date: 2010/04/03 10:56:32 $
 -->
-<!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN" 
-"http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
-<faces-config>
+<faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+	version="3.0">
 	<converter>
 		<converter-id>org.j4fry.dojo.Number</converter-id>
 		<converter-class>org.j4fry.dojo.converter.NumberConverter</converter-class>

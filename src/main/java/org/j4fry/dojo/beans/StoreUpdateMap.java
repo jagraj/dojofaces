@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +20,7 @@
 package org.j4fry.dojo.beans;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,11 +28,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.faces.application.Application;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.el.EvaluationException;
-import jakarta.faces.el.PropertyNotFoundException;
-import jakarta.faces.el.ValueBinding;
+import jakarta.el.ELContext;
+import jakarta.el.ELException;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.PropertyNotFoundException;
+import jakarta.el.ValueExpression;
+
+
 
 import org.j4fry.dojo.converter.StoreUpdateConverter;
 import org.j4fry.json.JSONArray;
@@ -131,6 +138,11 @@ public class StoreUpdateMap extends StoreMap {
 	public Object put (Object structure, Object updates) {
 		if (updates == null || !(updates instanceof JSONArray)) return null;
 		FacesContext context = FacesContext.getCurrentInstance();
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+		
 		try {
 			String structureString = ((String) structure).replace("__dojoFacelets_emtpyKey__", "#{" + var + "}");
 			
@@ -140,10 +152,10 @@ public class StoreUpdateMap extends StoreMap {
 	    	StoreUpdateConverter.tokenizeStructure(structureString, context, valueBindingStrings, childrenStrings, null, null, null);
 
 	    	// cache valueBindings once they are created
-	    	Map<String, ValueBinding> valueBindings = new HashMap<String, ValueBinding>();
-			Map<String, ValueBinding> children = new HashMap<String, ValueBinding>();
+	    	Map<String, ValueExpression> valueBindings = new HashMap<String, ValueExpression>();
+			Map<String, ValueExpression> children = new HashMap<String, ValueExpression>();
 
-			ValueBinding itemVb = context.getApplication().createValueBinding("#{" + var + "}");
+			ValueExpression itemVb = elFactory.createValueExpression(elContext,"#{" + var + "}",String.class);
 			for(int i = 0; i < ((JSONArray)updates).length(); i++) {
 				JSONObject update = (JSONObject) ((JSONArray)updates).get(i);
 				
@@ -209,19 +221,24 @@ public class StoreUpdateMap extends StoreMap {
 		}
 	}
 			
-	private Object getItem(FacesContext ctx, String updateKey, ValueBinding itemVb, Map<String, String> vbStrings, 
-			Map<String, ValueBinding> vbMap, Map<String, String> childrenStrings, Map<String, ValueBinding> children, Collection list) 
-			throws PropertyNotFoundException, EvaluationException, JSONException {
+	private Object getItem(FacesContext ctx, String updateKey, ValueExpression itemVb, Map<String, String> vbStrings, 
+			Map<String, ValueExpression> vbMap, Map<String, String> childrenStrings, Map<String, ValueExpression> children, Collection list) 
+			throws PropertyNotFoundException, ELException, JSONException {
+		
+		Application app = ctx.getApplication();
+
+		ELContext elContext = ctx.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
 		if (list != null) {
 			for(Object item : list) {
-				itemVb.setValue(ctx, item);
+				itemVb.setValue(elContext, item);
 				
 				// check if item corresponds to key 
 				if (vbStrings.get(key) != null) {
 					if (vbMap.get(key) == null) {
-						vbMap.put(key, ctx.getApplication().createValueBinding(vbStrings.get(key)));
+						vbMap.put(key, elFactory.createValueExpression(elContext,vbStrings.get(key),Object.class));
 					}
-					if (updateKey.equals(String.valueOf(vbMap.get(key).getValue(ctx)))) {
+					if (updateKey.equals(String.valueOf(vbMap.get(key).getValue(elContext)))) {
 						return item;
 					}
 				}
@@ -230,10 +247,10 @@ public class StoreUpdateMap extends StoreMap {
 				for (Iterator<String> childrenIt = childrenStrings.keySet().iterator(); childrenIt.hasNext(); ) {
 					String childrenAttr = childrenIt.next();
 					if (children.get(childrenAttr) == null) {
-						children.put(childrenAttr, ctx.getApplication().createValueBinding(childrenStrings.get(childrenAttr)));
+						children.put(childrenAttr, elFactory.createValueExpression(elContext,childrenStrings.get(childrenAttr),Object.class));
 					}
 					Object result = getItem(ctx, updateKey, itemVb, vbStrings, vbMap, childrenStrings, children, 
-							(Collection) children.get(childrenAttr).getValue(ctx));
+							(Collection) children.get(childrenAttr).getValue(elContext));
 					if (result != null) return result;
 				}
 			}
@@ -242,11 +259,17 @@ public class StoreUpdateMap extends StoreMap {
 	}
 	
 	private Object setItem(FacesContext context, JSONObject updateAttributes, Map<String, String> vbStrings, 
-			Map<String, ValueBinding> vbMap, Map<String, String> childrenStrings, Map<String, ValueBinding> children, 
-			Class modelClass, ValueBinding itemVb, Object item) 
-		throws PropertyNotFoundException, EvaluationException, JSONException, IllegalArgumentException, SecurityException, 
+			Map<String, ValueExpression> vbMap, Map<String, String> childrenStrings, Map<String, ValueExpression> children, 
+			Class modelClass, ValueExpression itemVb, Object item) 
+		throws PropertyNotFoundException, ELException, JSONException, IllegalArgumentException, SecurityException, 
 		InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-		itemVb.setValue(context, item);
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+
+		
+		itemVb.setValue(elContext, item);
 		Iterator<String> attributeIt = updateAttributes.keys();
 		while (attributeIt.hasNext()) {
 			String attribute = attributeIt.next();
@@ -254,38 +277,38 @@ public class StoreUpdateMap extends StoreMap {
 			if (childrenStrings.keySet().contains(attribute)) {
 				// need to recurse to set this attribute
 				if (children.get(attribute) == null) {
-					children.put(attribute, context.getApplication().createValueBinding(childrenStrings.get(attribute)));
+					children.put(attribute, elFactory.createValueExpression(elContext,childrenStrings.get(attribute),Object.class));
 				}
 				if (value instanceof JSONArray) {
 					JSONArray json = (JSONArray) value;
 					Collection list = new ArrayList();
-					children.get(attribute).setValue(context, list);
+					children.get(attribute).setValue(elContext, list);
 					for (int i = 0; i < json.length(); i++) {
 						list.add(setItem(context, (JSONObject) json.get(i), vbStrings, vbMap, childrenStrings, children, 
 								modelClass, itemVb, modelClass.getConstructor().newInstance()));
 					}
 				} else {
-					children.get(attribute).setValue(context, null);
+					children.get(attribute).setValue(elContext, null);
 				}
 			} else {
 				if (vbMap.get(attribute) == null) {
 					if (vbStrings.get(attribute) != null) {
-						vbMap.put(attribute, context.getApplication().createValueBinding(vbStrings.get(attribute)));
+						vbMap.put(attribute, elFactory.createValueExpression(elContext,vbStrings.get(attribute),Object.class));
 					}
 				}
-				if (vbMap.get(attribute) != null && !vbMap.get(attribute).isReadOnly(context)) {
+				if (vbMap.get(attribute) != null && !vbMap.get(attribute).isReadOnly(elContext)) {
 					if (itemVb.getExpressionString().equals(vbMap.get(attribute).getExpressionString())) {
 						item = value;
 					} else if (value instanceof JSONArray) {
 						// Leafs are encoded as one-element-arrays by dojo stores, so take only the first element to the model 
 						JSONArray json = (JSONArray) value;
 						if (json.length() == 0) {
-							vbMap.get(attribute).setValue(context, null);
+							vbMap.get(attribute).setValue(elContext, null);
 						} else {
-							vbMap.get(attribute).setValue(context, ((JSONArray) value).get(0));
+							vbMap.get(attribute).setValue(elContext, ((JSONArray) value).get(0));
 						}
 					} else {
-						vbMap.get(attribute).setValue(context, value);
+						vbMap.get(attribute).setValue(elContext, value);
 					}
 				}
 			}
@@ -328,19 +351,29 @@ public class StoreUpdateMap extends StoreMap {
 			return mi;
 		}
 		public Object invoke(Object o, JSONObject parameter) {
+			ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+			Application app = FacesContext.getCurrentInstance().getApplication();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+
 			if(expression == null) return null;
-			return ctx.getApplication().createMethodBinding(this.expression, new Class[] {Object.class, JSONObject.class})
-				.invoke(ctx, new Object[] {o, parameter});
+			return elFactory.createMethodExpression(elContext, this.expression, Object.class, new Class[] {Object.class, JSONObject.class} )
+				.invoke(elContext, new Object[] {o, parameter});
 		}
 		public Object invoke(JSONObject parameter) {
+			ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+			Application app = FacesContext.getCurrentInstance().getApplication();
+			ExpressionFactory elFactory = app.getExpressionFactory();
 			if(expression == null) return null;
-			return ctx.getApplication().createMethodBinding(this.expression, new Class[] {JSONObject.class})
-				.invoke(ctx, new Object[] {parameter});
+			return elFactory.createMethodExpression(elContext, this.expression, Object.class, new Class[] {JSONObject.class})
+				.invoke(elContext, new Object[] {parameter});
 		}
 		public Object invoke(Object parameter) {
+			ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+			Application app = FacesContext.getCurrentInstance().getApplication();
+			ExpressionFactory elFactory = app.getExpressionFactory();
 			if(expression == null) return null;
-			return ctx.getApplication().createMethodBinding(this.expression, new Class[] {Object.class})
-				.invoke(ctx, new Object[] {parameter});
+			return elFactory.createMethodExpression(elContext, this.expression, Object.class, new Class[] {Object.class})
+				.invoke(elContext, new Object[] {parameter});
 		}
 	}
 }

@@ -1,6 +1,7 @@
 /*
  * Copyright 2009 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,8 +23,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
+import jakarta.faces.application.Application;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.el.ValueBinding;
 
 /**
  * transforms a list to a Map with params List list, String var, String key
@@ -46,14 +50,19 @@ public class ListToMapMap extends MapAdapter {
 			return this;
 		} else {
 			FacesContext context = FacesContext.getCurrentInstance();
-			ValueBinding varVb = context.getApplication().createValueBinding("#{" + var + "}");
-			ValueBinding keyVb = context.getApplication().createValueBinding(key);
-			ValueBinding valueVb = context.getApplication().createValueBinding((String) o);
+			Application app = context.getApplication();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+			ELContext elContext = context.getELContext();
+			
+			ValueExpression varVb =elFactory.createValueExpression(elContext,"#{" + var + "}",String.class);
+			ValueExpression keyVb =elFactory.createValueExpression(elContext,key,String.class);
+			ValueExpression valueVb =elFactory.createValueExpression(elContext,(String) o,String.class);
+
 			Map<String, String> result = new LinkedHashMap<String, String>();
 			for (Object element : list) {
-				varVb.setValue(context, element);
-				Object key = keyVb.getValue(context);
-				Object value =  valueVb.getValue(context);
+				varVb.setValue(elContext, element);
+				Object key = keyVb.getValue(elContext);
+				Object value =  valueVb.getValue(elContext);
 				result.put(key == null ? "" : key.toString(), value == null ? null : value.toString()); 
 			}
 			return result;

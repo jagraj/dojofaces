@@ -1,6 +1,7 @@
 /*
  * Copyright 2009 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +22,11 @@ package org.j4fry.dojo.beans;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.application.Application;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
@@ -49,7 +54,14 @@ public class DojoHelper {
 	 */
 	public static DojoHelper get() {
 		FacesContext context = FacesContext.getCurrentInstance();
-		return (DojoHelper) context.getApplication().createValueBinding("#{dojoHelper}").getValue(context);		
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+    	ValueExpression dojoHelperExpression = elFactory.createValueExpression(elContext,"#{dojoHelper}",DojoHelper.class);
+    	DojoHelper dojoHelper = dojoHelperExpression.getValue(elContext);
+		
+		return dojoHelper;		
 	}
 
 	/**

@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,23 +20,18 @@
 package org.j4fry.dojo.converter;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.convert.Converter;
-import jakarta.faces.convert.ConverterException;
-import jakarta.faces.el.ValueBinding;
-
-import org.j4fry.json.JSFJSONObject;
 import org.j4fry.json.JSFJSONTokener;
 import org.j4fry.json.JSONArray;
-import org.j4fry.json.JSONException;
-import org.j4fry.json.JSONObject;
+
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
+import jakarta.faces.application.Application;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.ConverterException;
 
 /**
  * Converts a JSON String that represents the changes that where made in 
@@ -55,6 +51,11 @@ public class StoreUpdateConverter extends StoreConverterBase {
 	public Object getAsObject(FacesContext context, UIComponent component, String update) throws ConverterException {
 		try {
 			// only start if there is something to update
+			Application app = context.getApplication();
+
+			ELContext elContext = context.getELContext();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+			
 			if (update != null && update instanceof String 
 			&& ((String) update).length() > 0 && ((String) update).startsWith("[")) {
 				// transform json changes into HashMap
@@ -67,11 +68,11 @@ public class StoreUpdateConverter extends StoreConverterBase {
 		    	
 		    	// initialize the itemVb with either the modelClassName or with the first element of the List
 		    	// to enable converter type lookup for columns where a converter is not defined
-		    	ValueBinding itemVb = context.getApplication().createValueBinding("#{" + var + "}");
+		    	ValueExpression itemVb = elFactory.createValueExpression(elContext,"#{" + var + "}",Object.class);
 				if (modelClassName != null) {
-					itemVb.setValue(context, Class.forName(modelClassName).getConstructor(null).newInstance(null));
+					itemVb.setValue(elContext, Class.forName(modelClassName).getConstructor(null).newInstance(null));
 				} else if (items != null && items.size() > 0) {
-					itemVb.setValue(context, items.iterator().next());
+					itemVb.setValue(elContext, items.iterator().next());
 				}
 				
 		    	// convert the String to a JSONObject 

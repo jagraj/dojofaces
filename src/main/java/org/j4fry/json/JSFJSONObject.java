@@ -1,6 +1,7 @@
 /*
  * Copyright 2009 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,12 +21,12 @@ package org.j4fry.json;
 
 import java.util.Map;
 
+import org.j4fry.dojo.converter.StoreConverterBase;
+
+import jakarta.el.ValueExpression;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
-import jakarta.faces.el.ValueBinding;
-
-import org.j4fry.dojo.converter.StoreConverterBase;
 
 /**
  * Converts a JSON String to a Java object while using a given set of JSF converters
@@ -34,7 +35,7 @@ public class JSFJSONObject extends JSONObject {
 
     public JSFJSONObject(FacesContext context, UIComponent component,
     		String content, String changedContent, Map<String, String> valueBindingStrings,
-    		Map<String, Map<String, String>> converterStrings, Map<String, ValueBinding> valueBindings,
+    		Map<String, Map<String, String>> converterStrings, Map<String, ValueExpression> valueBindings,
     		Map<String, Converter> converters) throws JSONException {
         this(new JSFJSONTokener(context, component, content, changedContent, valueBindingStrings,
 				converterStrings, valueBindings, converters), context, component, valueBindingStrings,
@@ -51,7 +52,7 @@ public class JSFJSONObject extends JSONObject {
      */
     public JSFJSONObject(JSFJSONTokener x, FacesContext context, UIComponent component, 
     		Map<String, String> valueBindingStrings,
-    		Map<String, Map<String, String>> converterStrings, Map<String, ValueBinding> valueBindings,
+    		Map<String, Map<String, String>> converterStrings, Map<String, ValueExpression> valueBindings,
     		Map<String, Converter> converters) throws JSONException {
         super();
         char c;

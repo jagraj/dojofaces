@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  *
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.j4fry.dojo.converter.StoreUpdateConverter;
+
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
+import jakarta.faces.application.Application;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.el.ValueBinding;
-
-import org.j4fry.dojo.converter.StoreUpdateConverter;
 
 public class GridEventMap extends MapAdapter {
 
@@ -59,7 +63,11 @@ public class GridEventMap extends MapAdapter {
 	public Object put (Object gridId, Object keyValue) {
 		if (keyValue != null && keyValue instanceof String && ((String) keyValue).length() > 0) {
 			FacesContext context = FacesContext.getCurrentInstance();
-	
+			Application app = context.getApplication();
+
+			ELContext elContext = context.getELContext();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+
 			UIComponent storeHidden = context.getViewRoot().findComponent(DojoHelper.get().getClientId().get(gridId+"_store"));
 			// tokenize structure
 			Map<String, String> valueBindingStrings = new HashMap<String, String>();
@@ -73,20 +81,21 @@ public class GridEventMap extends MapAdapter {
 			}
 	
 			if(keyExpression != null && !"".equals(keyExpression)) {
-				context.getApplication().createValueBinding("#{" + keyExpression + "}").setValue(context, keyValue);
+				ValueExpression keyValueExpression =elFactory.createValueExpression(elContext,"#{" + keyExpression + "}",String.class);
+				keyValueExpression.setValue(elContext, keyValue);
 			}
 	
 			if(valueExpression != null && !"".equals(valueExpression)) {
 				List list = (List) storeHidden.getAttributes().get("items");
 				if(list != null) {
-					ValueBinding vbItem = context.getApplication().createValueBinding("#{" + storeHidden.getAttributes().get("var") + "}");
-					ValueBinding vbKey = context.getApplication().createValueBinding(valueBindingStrings.get(storeHidden.getAttributes().get("key")));
+					ValueExpression vbItem = elFactory.createValueExpression(elContext,"#{" + storeHidden.getAttributes().get("var") + "}",String.class);
+					ValueExpression vbKey = elFactory.createValueExpression(elContext,valueBindingStrings.get(storeHidden.getAttributes().get("key")),String.class);
 					boolean valueSet = false;
 					for(Object o : list) {
-						vbItem.setValue(context, o);
-						Object id = vbKey.getValue(context);
+						vbItem.setValue(elContext, o);
+						Object id = vbKey.getValue(elContext);
 						if(id != null && keyValue.equals(id.toString())) {
-							context.getApplication().createValueBinding("#{" + valueExpression + "}").setValue(context, o);
+							elFactory.createValueExpression(elContext,"#{" + valueExpression + "}",String.class).setValue(elContext, o);
 							valueSet = true;
 							break;
 						}
@@ -94,7 +103,7 @@ public class GridEventMap extends MapAdapter {
 					if(!valueSet)
 						throw new IllegalArgumentException("Cannot set value " + keyValue +
 							" into expression " + valueExpression + "(" + valueBindingStrings.get(storeHidden.getAttributes().get("key")) + ")");
-					vbItem.setValue(context, null);
+					vbItem.setValue(elContext, null);
 				}
 			}
 		}

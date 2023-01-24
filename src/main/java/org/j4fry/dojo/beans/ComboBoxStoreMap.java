@@ -1,6 +1,6 @@
 /*
  * Copyright 2009 Ganesh Jung
- * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,10 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.el.ValueBinding;
-
 import org.j4fry.json.JSONObject;
+
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
 
 /**
 * Create a JSON store from a server side list with the params List list, String var, String key
@@ -53,23 +56,30 @@ public class ComboBoxStoreMap extends MapAdapter {
 		} else {
 			key = (String) o;
 			FacesContext context = FacesContext.getCurrentInstance();
-			ValueBinding itemVb = context.getApplication().createValueBinding("#{" + var + "}");
-			ValueBinding keyVb = context.getApplication().createValueBinding(
-					"dojofaces_key_undefined".equals(key) ? "#{" + var + "}" : key);
+			Application app = context.getApplication();
+
+			ELContext elContext = context.getELContext();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+
+
+	    	ValueExpression itemVb = elFactory.createValueExpression(elContext,"#{" + var + "}",String.class);
+	    	String expression = "dojofaces_key_undefined".equals(key) ? var : key;
+	    	ValueExpression	keyVb = elFactory.createValueExpression(elContext,expression,String.class);
+	    		
 			
 			StringBuffer result = new StringBuffer();
 			result.append("[");
 			boolean start = true;
 			if (list != null) {
 				for (Object item : list) {
-					itemVb.setValue(context, item);
+					itemVb.setValue(elContext, item);
 					if (start) {
 						start = false;  
 					} else {
 						result.append(",");
 					}
 					Map<String, Object> jsonContent = new HashMap<String, Object>();
-					jsonContent.put("name", keyVb.getValue(context));
+					jsonContent.put("name", keyVb.getValue(elContext));
 					result.append(new JSONObject(jsonContent).toString());
 				}
 			}

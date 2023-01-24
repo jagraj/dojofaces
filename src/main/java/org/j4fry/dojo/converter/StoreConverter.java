@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,15 +24,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.j4fry.json.JSONArray;
+import org.j4fry.json.JSONException;
+import org.j4fry.json.JSONObject;
+
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
+import jakarta.faces.application.Application;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.ConverterException;
-import jakarta.faces.el.ValueBinding;
-
-import org.j4fry.json.JSONArray;
-import org.j4fry.json.JSONException;
-import org.j4fry.json.JSONObject;
 
 /**
  * This converter converts a Collection of Objects to a JSON String based on the dataStore's structure.
@@ -52,13 +56,19 @@ public class StoreConverter extends StoreConverterBase {
 	}
 
 	public String getAsString(FacesContext context, UIComponent component, Object value) {
+
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+		
 		if (value == null || value instanceof String) return "[]";
 		Collection list = (Collection) value;
 		// The attributes are nested in the fields to allow converter access
 		Map attributes = component.getAttributes();
 		String structure = (String) attributes.get("structure");
 		String var = (String) attributes.get("var");
-		ValueBinding itemVb = context.getApplication().createValueBinding("#{" + var + "}");
+		ValueExpression itemVb = elFactory.createValueExpression(elContext,"#{" + var + "}",Object.class);
     	try {
     		// determine the String definitions of valueBindings and converters and store them in Maps 
 			tokenizeStructure(structure, context, valueBindingStrings, childrenStrings, numeric, converterStrings, null);
@@ -66,12 +76,12 @@ public class StoreConverter extends StoreConverterBase {
 			Iterator<String> childrenIterator = childrenStrings.keySet().iterator();
 			while (childrenIterator.hasNext()) {
 				String key = childrenIterator.next();
-				children.put(key, context.getApplication().createValueBinding(childrenStrings.get(key)));
+				children.put(key, elFactory.createValueExpression(elContext,childrenStrings.get(key),Object.class));
 			}
 			Iterator<String> vbIterator = valueBindingStrings.keySet().iterator();
 			while (vbIterator.hasNext()) {
 				String key = vbIterator.next();
-				valueBindings.put(key, context.getApplication().createValueBinding(valueBindingStrings.get(key)));
+				valueBindings.put(key, elFactory.createValueExpression(elContext,valueBindingStrings.get(key),Object.class));
 			}
 			// Now build the result String
 			String result = buildJSON(list, itemVb, context, component).toString();
@@ -81,12 +91,16 @@ public class StoreConverter extends StoreConverterBase {
 		}
 	}
 
-	private JSONArray buildJSON(Collection list, ValueBinding itemVb, FacesContext context, UIComponent component) throws JSONException {
+	private JSONArray buildJSON(Collection list, ValueExpression itemVb, FacesContext context, UIComponent component) throws JSONException {
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
 		JSONArray result = new JSONArray();
 		boolean start = true;
 		for (Object item : list) {
 			// put the next item into the valueBinding defined by "var"
-			itemVb.setValue(context, item);
+			itemVb.setValue(elContext, item);
 			
 			// prepare a Map for the JSON Object
 			JSONObject jsonContent = new JSONObject();
@@ -95,7 +109,7 @@ public class StoreConverter extends StoreConverterBase {
 			Iterator<String> jsonIt = valueBindings.keySet().iterator();
 			while (jsonIt.hasNext()) {
 				String jsonKey = jsonIt.next();
-				Object jsonValue = valueBindings.get(jsonKey).getValue(context);
+				Object jsonValue = valueBindings.get(jsonKey).getValue(elContext);
 				// Only look for a converter for non null values. Booleans are converted by JSONObject's toString method.
 				if (jsonValue != null && !(jsonValue instanceof Boolean) 
 				&& !(Boolean.TRUE.equals(numeric.get(jsonKey)))) {
@@ -112,7 +126,7 @@ public class StoreConverter extends StoreConverterBase {
 			Iterator<String> childrenIt = children.keySet().iterator();
 			while (childrenIt.hasNext()) {
 				String childrenKey = childrenIt.next();
-				Object childList = children.get(childrenKey).getValue(context);
+				Object childList = children.get(childrenKey).getValue(elContext);
 				if (childList instanceof Collection) {
 					jsonContent.put(childrenKey, buildJSON((Collection) childList, itemVb, context, component));
 				}

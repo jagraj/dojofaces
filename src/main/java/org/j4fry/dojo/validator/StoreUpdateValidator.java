@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,32 +25,24 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import org.j4fry.dojo.converter.StoreConverterBase;
+import org.j4fry.json.JSONArray;
+import org.j4fry.json.JSONException;
+import org.j4fry.json.JSONObject;
 
 import jakarta.faces.FacesException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.convert.ConverterException;
-import jakarta.faces.el.ValueBinding;
 import jakarta.faces.validator.Validator;
 import jakarta.faces.validator.ValidatorException;
-
-import org.j4fry.dojo.converter.StoreConverterBase;
-import org.j4fry.json.JSFJSONObject;
-import org.j4fry.json.JSONArray;
-import org.j4fry.json.JSONException;
-import org.j4fry.json.JSONObject;
 
 /**
  * This validator is used on the hidden updates of a dataStore

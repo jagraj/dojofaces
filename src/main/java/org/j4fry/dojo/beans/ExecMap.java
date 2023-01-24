@@ -1,6 +1,7 @@
 /*
  * Copyright 2009 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,35 +19,39 @@
  */
 package org.j4fry.dojo.beans;
 
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.MethodExpression;
+import jakarta.faces.application.Application;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.el.MethodBinding;
 
 /**
- * execute a JSF method binding
- * the escaped method expression \#{ex} is passed to the facelets template
- * <param name="m" value="\#{ex}" />
- * execution is then triggered via #{dojoHelper.execMap[m]}
+ * execute a JSF method binding the escaped method expression \#{ex} is passed
+ * to the facelets template <param name="m" value="\#{ex}" /> execution is then
+ * triggered via #{dojoHelper.execMap[m]}
  */
 public class ExecMap extends MapAdapter {
 
-	private MethodBinding methodBinding;
+	private MethodExpression methodExpression;
 	private String fixedResponse;
 
 	public String trigger() {
-		if (methodBinding != null) {
-			FacesContext context = FacesContext.getCurrentInstance();
-			return (String) methodBinding.invoke(context, null);
+		if (methodExpression != null) {
+			ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+			return (String) methodExpression.invoke(elContext, null);
 		} else {
 			return fixedResponse;
 		}
 	}
-	
+
 	public ExecMap get(Object key) {
 		String method = (String) key;
 		if (method != null && !"dojoFacesNullAction".equals(method)) {
 			if (method.startsWith("#{") && method.endsWith("}")) {
-				FacesContext context = FacesContext.getCurrentInstance();
-				methodBinding = context.getApplication().createMethodBinding(method, null);
+				ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+				Application app = FacesContext.getCurrentInstance().getApplication();
+				ExpressionFactory elFactory = app.getExpressionFactory();
+				methodExpression = elFactory.createMethodExpression(elContext, method, null, new Class[] {});
 			} else {
 				fixedResponse = method;
 			}

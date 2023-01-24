@@ -1,6 +1,7 @@
 /*
  * Copyright 2007 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +28,9 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Locale;
 
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.faces.application.Application;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.ConverterException;
@@ -87,6 +91,11 @@ public class NumberConverter extends BaseConverter {
 	}
 
 	public Object convert(FacesContext context, UIComponent component, String value) {
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+		
 		if (value == null || value.length() == 0) return null;
 		String errorMessage = null;
 		Number result = null;
@@ -112,7 +121,7 @@ public class NumberConverter extends BaseConverter {
 							(String)component.getAttributes().get("Class"));
 				}
 		    } else {
-		    	targetType = component.getValueBinding("value").getType(context);
+		    	targetType = component.getValueExpression("value").getType(elContext);
 		    }
 			if (targetType == Integer.class) {
 				if (result instanceof Integer) {

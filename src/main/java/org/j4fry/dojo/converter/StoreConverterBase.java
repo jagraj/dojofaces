@@ -1,6 +1,7 @@
 /*
  * Copyright 2010 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,17 +35,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.j4fry.json.JSONArray;
+import org.j4fry.json.JSONException;
+import org.j4fry.json.JSONObject;
+
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.el.ValueExpression;
 import jakarta.faces.FacesException;
+import jakarta.faces.application.Application;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.ConverterException;
-import jakarta.faces.el.ValueBinding;
-
-import org.j4fry.json.JSONArray;
-import org.j4fry.json.JSONException;
-import org.j4fry.json.JSONObject;
 
 /**
  * Base class for {@link StoreConverter} and {@link StoreUpdateConverter}
@@ -52,12 +56,12 @@ import org.j4fry.json.JSONObject;
  */
 public abstract class StoreConverterBase implements Converter {
 
-	protected Map<String, ValueBinding> valueBindings = new HashMap<String, ValueBinding>();
+	protected Map<String, ValueExpression> valueBindings = new HashMap<String, ValueExpression>();
 	protected Map<String, String> valueBindingStrings = new HashMap<String, String>();
 	protected Map<String, Map<String, String>> converterStrings = new HashMap<String, Map<String, String>>();
 	protected Map<String, Converter> converters = new HashMap<String, Converter>();
 	protected Map<String, String> childrenStrings = new HashMap<String, String>();
-	protected Map<String, ValueBinding> children = new HashMap<String, ValueBinding>();
+	protected Map<String, ValueExpression> children = new HashMap<String, ValueExpression>();
 
 	private static Map<String, JSONObject> structureCache = new HashMap<String, JSONObject>();
 	/**
@@ -150,10 +154,16 @@ public abstract class StoreConverterBase implements Converter {
 	}
 
 	public static Converter determineConverter(FacesContext context, UIComponent component, String key,
+
 			Map<String, Converter> converters,
 			Map<String, Map<String, String>> converterStrings,
-			Map<String, ValueBinding> valueBindings,
+			Map<String, ValueExpression> valueBindings,
 			Map<String, String> valueBindingStrings, boolean defaultDateConverter) {
+		Application app = context.getApplication();
+
+		ELContext elContext = context.getELContext();
+		ExpressionFactory elFactory = app.getExpressionFactory();
+
 		Converter converter = null;
     	if (converters.get(key) != null) {
     		converter = converters.get(key);
@@ -168,12 +178,12 @@ public abstract class StoreConverterBase implements Converter {
         	} else {
         		if (valueBindings.get(key) == null) {
         			if (valueBindingStrings.get(key) != null) {
-                		ValueBinding vb = context.getApplication().createValueBinding(valueBindingStrings.get(key));
+        				ValueExpression vb = elFactory.createValueExpression(elContext,valueBindingStrings.get(key),Object.class);
                 		valueBindings.put(key, vb);
         			}
         		}
         		if (valueBindings.get(key) != null) {
-	        		Class clazz = valueBindings.get(key).getType(context);
+	        		Class clazz = valueBindings.get(key).getType(elContext);
 	        		if (clazz == java.lang.Number.class) {
 	        			converter = context.getApplication().createConverter("jakarta.faces.Number");
 	        		} else {

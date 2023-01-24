@@ -1,6 +1,7 @@
 /*
  * Copyright 2009 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,10 +23,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.el.ValueExpression;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
-import jakarta.faces.el.ValueBinding;
 
 
 /**
@@ -34,7 +35,7 @@ import jakarta.faces.el.ValueBinding;
  */
 public class JSFJSONTokener extends JSONTokener {
 
-	private Map<String, ValueBinding> valueBindings = new HashMap<String, ValueBinding>();
+	private Map<String, ValueExpression> valueBindings = new HashMap<String, ValueExpression>();
 	private Map<String, String> valueBindingStrings = new HashMap<String, String>();
 	private Map<String, Map<String, String>> converterStrings = new HashMap<String, Map<String, String>>();
 	private Map<String, Converter> converters = new HashMap<String, Converter>();
@@ -43,7 +44,7 @@ public class JSFJSONTokener extends JSONTokener {
 
 	public JSFJSONTokener(FacesContext context, UIComponent component,
     		String content, String changedContent,	Map<String, String> valueBindingStrings,
-    		Map<String, Map<String, String>> converterStrings, Map<String, ValueBinding> valueBindings,
+    		Map<String, Map<String, String>> converterStrings, Map<String, ValueExpression> valueBindings,
     		Map<String, Converter> converters) throws JSONException {
 		super(changedContent);
 		this.valueBindingStrings = valueBindingStrings;

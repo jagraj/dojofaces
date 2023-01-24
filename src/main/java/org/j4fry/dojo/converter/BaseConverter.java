@@ -1,6 +1,7 @@
 /*
  * Copyright 2007 Ganesh Jung
  * 
+ * 2023 Jag Gangaraju & Volodymyr Siedlecki
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +23,14 @@ package org.j4fry.dojo.converter;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import jakarta.el.ELContext;
+import jakarta.el.ExpressionFactory;
+import jakarta.faces.application.Application;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.ConverterException;
-import jakarta.faces.webapp.UIComponentTag;
 
 /**
  * some basic converter attributes ported from j4fry errorhandling
@@ -129,14 +132,17 @@ public abstract class BaseConverter implements Converter {
 		}
 		newMessage.append(message.substring(oldPos));
 		String detailMessage = context.getExternalContext().getInitParameter("J4Fry_ACTION_DETAIL_MESSAGE");
-		if (detailMessage != null && UIComponentTag.isValueReference((detailMessage))) {
+		/*if (detailMessage != null && UIComponentTag.isValueReference((detailMessage))) {
 			detailMessage = context.getApplication().createValueBinding(detailMessage).getValue(context).toString();
-		}
+		}*/
 		// execute onError
 		Map attributes = component.getAttributes();
 		String onError = (String) attributes.get("onError");
 		if (onError != null) {
-			context.getApplication().createMethodBinding("#{" + onError + "}", new Class[] {}).invoke(context, new Object[] {});
+			ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+			Application app = FacesContext.getCurrentInstance().getApplication();
+			ExpressionFactory elFactory = app.getExpressionFactory();
+			elFactory.createMethodExpression(elContext, "#{" + onError + "}", null, new Class[] {}).invoke(elContext, new Object[] {});
 		}
 		throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, newMessage.toString(), detailMessage != null ? detailMessage : newMessage.toString()));
 	}
